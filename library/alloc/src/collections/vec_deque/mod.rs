@@ -189,7 +189,9 @@ impl<T, A: Allocator> VecDeque<T, A> {
     #[inline]
     unsafe fn buffer_write(&mut self, off: usize, value: T) -> &mut T {
         unsafe {
-            ptr::write(self.ptr().add(off), value);
+            let ptr = self.ptr().add(off);
+            ptr::write(ptr, value);
+            ptr
         }
     }
 
