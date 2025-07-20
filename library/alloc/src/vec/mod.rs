@@ -2063,9 +2063,17 @@ impl<T, A: Allocator> Vec<T, A> {
     #[track_caller]
     #[must_use = "if you don't need a reference to the value, use Vec::insert instead"]
     pub fn insert_mut(&mut self, index: usize, element: T) -> &mut T {
+        #[cold]
+        #[cfg_attr(not(feature = "panic_immediate_abort"), inline(never))]
+        #[track_caller]
+        #[optimize(size)]
+        fn assert_failed(index: usize, len: usize) -> ! {
+            panic!("insertion index (is {index}) should be <= len (is {len})");
+        }
+
         let len = self.len();
         if intrinsics::unlikely(index > len) {
-            panic!("insertion index (is {index}) should be <= len (is {})", len)
+            assert_failed(index, len)
         };
 
         // space for the new element
